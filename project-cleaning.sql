@@ -97,6 +97,7 @@ where special_features like '%deleted%';
 
 ## Nueva tabla:
 
+create temporary table new_table(
 select actor.Full_Name, actorfilms.title,  category.name, film.rental_rate, (SUBSTRING_INDEX(special_features, ',', 1)) as special_feature1,
 		(SUBSTRING_INDEX(special_features, ',', -1)) as special_feature2, 
         round((TIMESTAMPDIFF(HOUR, rental.rental_date, rental.return_date)/24),0) AS dias_transcurridos
@@ -105,4 +106,24 @@ join actorfilms using (FUll_Name)
 join category using (category_id)
 join film using (title)
 join inventory using (film_id)
-join rental using (inventory_id);
+join rental using (inventory_id));
+
+select * from new_table;
+
+# Quiero saber qué actores participan en películas con special feature 'behind scenes':
+
+select Full_Name from new_table
+where special_feature1 = 'behind the scenes' or special_feature2 = 'behind the scenes';
+
+# Ahora quisiera contarlos:
+
+select count(distinct Full_Name) from new_table
+where special_feature1 = 'behind the scenes' or special_feature2 = 'behind the scenes';
+
+# Por último voy a obtener solo los títulos con 'rental_rate' mayor a 3 dólares que no hayan tenido trailers y los hayan devuelto (en promedio) en menos de 5 días:
+
+select distinct title from new_table
+where rental_rate > 3 
+and special_feature1 <> 'trailers' 
+and special_feature2 <> 'trailers' 
+and dias_transcurridos < 5;
